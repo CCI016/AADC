@@ -1,108 +1,60 @@
-/* FACTORY Assignment from the Challenges of Week 1 of AADC */
-/* Done by : Constantin Cainarean and Garabajiu Denis */
+/* FACTORY Assignment from the Chalfactoriesges of Week 1 of AADC */
+/* Done by : Constantin Cainarean s4142152 and Garabajiu Denis s4142551*/
 
-#include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
-struct Factory {
-   long int prod;
-	 long int days;
-};
+// That is the binary search algorithm, but it is adapted to the problem's requierments
+// We make an assumption that the arrays are already sorted, but even if they are not, the totalRatio will fix this issue
+// Refference: https://www.geeksforgeeks.org/binary-search/
+long findLeastNumberOfDays(unsigned long long int limitR, unsigned long long int limitL, int factories, int days[], int products[], unsigned long long int total) {
+  unsigned long long int totalRatio =  0;
+	// the middled of our interval
+	unsigned long long int middle = limitL + ((limitR-limitL) + 1) / 2;
 
-struct Factory *copySubArray(long int left, long int right, struct Factory arr[]) {
-	long int i;
-	struct Factory *copy;
-	copy = malloc((right - left)*sizeof(struct Factory));
-	for (i=left; i < right; i++) {
-		copy[i - left] = arr[i];
-	}
-	return copy;
-}
-
-void mergeSort(long int length, struct Factory arr[]) {
-	long int l, r, mid, idx;
-	struct Factory *left, *right;
-	if (length <= 1) {
-		return;
-	}
-	mid = length/2;
-	left = copySubArray(0, mid, arr);
-	right = copySubArray(mid, length, arr);
-	mergeSort(mid, left);
-	mergeSort(length - mid, right);
-	idx = 0;
-	l = 0;
-	r = 0;
-	while ((l < mid) && (r < length - mid)) {
-		if (left[l].days < right[r].days) {
-			arr[idx] = left[l];
-			l++;
-		} else {
-			arr[idx] = right[r];
-			r++;
-		}
-		idx++;
-	}
-	while (l < mid) {
-		arr[idx] = left[l];
-		idx++;
-		l++;
-	}
-	while (r < length - mid) {
-		arr[idx] = right[r];
-		idx++;
-		r++;
-	}
-	free(left);
-	free(right);
-}
-
-
-void findMinimalDays(long int p, long int n, struct Factory factories[]) {
-	long int currentDay = 1;
-
-	while (p > 1) {
-		for (long int i = 0; i < n; i ++) {
-			if (factories[i].days > currentDay) {
-				break;
-			} else if (currentDay % factories[i].days == 0) {
-				p = p - factories[i].prod;
-			}
-		}
-		currentDay++;
-	}
-	printf("%d\n", currentDay - 1); 
-}
-
-
-int main(int argc, char* argv[]) {
+	// We implemeted the idea of golden ratio for our binary search algorithm. 
+	// somethin similar can be found in the knapsack problem.
+	for (int i = 0; i < factories; i++) {
+		totalRatio += (middle / days[i]) * products[i];
+  }
+  
+  if (limitL == limitR) {
+		return totalRatio < total ? limitL++ : limitL;
+  } 
 	
-	// We are scanning the input of the number of gpu's.
-	long int p;
-	scanf("%ld", &p);
+	return totalRatio < total ? findLeastNumberOfDays(limitR, middle + 1, factories, days, products, total) :
+															findLeastNumberOfDays(middle, limitL, factories, days, products, total);
 
-	// The number of factories
-	long int n;
-	scanf("%ld", &n);
+} 
 
-	struct Factory factories[n];
+void printResult(int factories, int days[], int products[], unsigned long long int total) {
+	// maximal limit for our search algorithm
+	unsigned long long int max = 18446744073709551615ULL;
+	long int result = findLeastNumberOfDays(max, 0, factories, days, products, total);
 
-	// Scanning the input and organizing it into the arrays.
-	for (long int i = 0; i < n; i++) {
-		scanf("%d %d", &factories[i].prod, &factories[i].days);
-	}
+  printf("%ld\n", result);
+}
 
-	mergeSort(n, factories);
+// A function for scanning the input of the problem
+void scan() {
+	//numebr of GPU's that needs to be produced
+  unsigned long long int total;
+  scanf("%llu", &total);
 
-	findMinimalDays(p, n, factories);
+	// Total number of factories
+  int factories;
+  scanf("%d", &factories);
+  
+  int products[factories], days[factories];
+  for (int i=0; i < factories; i++) {
+		scanf("%d %d", &products[i], &days[i]);
+  }
 
+	printResult(factories, days, products, total);
+}
 
-
-	// printf("--------");
-
-	// for (int i = 0; i < n; i++) {
-	// 	printf("%d %d\n", factories[i].prod, factories[i].days);
-	// }
-	return 0;
+int main(int argc, char *argv[]) {
+  scan();
 }
