@@ -1,4 +1,4 @@
-/* FACTORY Assignment from the Chalfactoriesges of Week 1 of AADC */
+/* FACTORY Assignment from the Challenges of Week 1 of AADC */
 /* Done by : Constantin Cainarean s4142152 and Garabajiu Denis s4142551*/
 
 #include <limits.h>
@@ -9,10 +9,10 @@
 // That is the binary search algorithm, but it is adapted to the problem's requierments
 // We make an assumption that the arrays are already sorted, but even if they are not, the totalRatio will fix this issue
 // Refference: https://www.geeksforgeeks.org/binary-search/
-long findLeastNumberOfDays(unsigned long long int limitR, unsigned long long int limitL, int factories, int days[], int products[], unsigned long long int total) {
-  unsigned long long int totalRatio =  0;
+long findLeastNumberOfDays(__int128 limitR, __int128 limitL, int factories, int days[], int products[], __int128 total) {
+  __int128 totalRatio =  0;
 	// the middled of our interval
-	unsigned long long int middle = limitL + ((limitR-limitL) + 1) / 2;
+	__int128 middle = limitL + ((limitR-limitL)) / 2;
 
 	// We implemeted the idea of golden ratio for our binary search algorithm. 
 	// somethin similar can be found in the knapsack problem.
@@ -29,7 +29,7 @@ long findLeastNumberOfDays(unsigned long long int limitR, unsigned long long int
 
 } 
 
-void printResult(int factories, int days[], int products[], unsigned long long int total) {
+void printResult(int factories, int days[], int products[], __int128 total) {
 	// maximal limit for our search algorithm
 	unsigned long long int max = 18446744073709551615ULL;
 	long int result = findLeastNumberOfDays(max, 0, factories, days, products, total);
@@ -43,6 +43,8 @@ void scan() {
   unsigned long long int total;
   scanf("%llu", &total);
 
+  __int128 totalGPUS = (__int128)total;
+
 	// Total number of factories
   int factories;
   scanf("%d", &factories);
@@ -52,7 +54,7 @@ void scan() {
 		scanf("%d %d", &products[i], &days[i]);
   }
 
-	printResult(factories, days, products, total);
+	printResult(factories, days, products, totalGPUS);
 }
 
 int main(int argc, char *argv[]) {

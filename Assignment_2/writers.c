@@ -1,5 +1,5 @@
-/* WRITERS Assignment from the Challenges of Week 1 of AADC */
-/* Done by : Constantin Cainarean s4142152 and Garabajiu Denis */
+/* WRITERS Assignment from the Challenges of Week 2 of AADS */
+/* Done by : Constantin Cainarean s4142152 and Garabajiu Denis S4142551 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,88 +9,120 @@ struct Writers {
   int difficulty;
 };
 
-// Below is an implementation of the merge sort algorithm by Arnold Meijster.
-// Which we have used and implemented during all the courses with C programming.
-struct Writers *copySubArray(int left, int right, struct Writers arr[]) {
-	int i;
-	struct Writers *copy;
-	copy = malloc((right - left)*sizeof(struct Writers));
-	for (i=left; i < right; i++) {
-		copy[i - left] = arr[i];
-	}
-	return copy;
+// Function that swaps two integer's inside an array. (Updated for struct array)
+void swap(int i, int k, struct Writers arr[]) {
+   struct Writers h = arr[i];
+   arr[i] = arr[k];
+   arr[k] = h;
 }
 
-void mergeSort(int length, struct Writers arr[]) {
-	int l, r, mid, idx;
-	struct Writers *left, *right;
-	if (length <= 1) {
-		return;
-	}
-	mid = length/2;
-	left = copySubArray(0, mid, arr);
-	right = copySubArray(mid, length, arr);
-	mergeSort(mid, left);
-	mergeSort(length - mid, right);
-	idx = 0;
-	l = 0;
-	r = 0;
-	while ((l < mid) && (r < length - mid)) {
-		if (left[l].difficulty < right[r].difficulty) {
-			arr[idx] = left[l];
-			l++;
-		} else {
-			arr[idx] = right[r];
-			r++;
-		}
-		idx++;
-	}
-	while (l < mid) {
-		arr[idx] = left[l];
-		idx++;
-		l++;
-	}
-	while (r < length - mid) {
-		arr[idx] = right[r];
-		idx++;
-		r++;
-	}
-	free(left);
-	free(right);
+
+// Below there is an implementation of Quick Sort algorithm by Arnold Meijster, used in previous courses.
+int partition(int length, struct Writers arr[]) {
+   int left = 0;
+   int right = length;
+   int indentifier = arr[0].identifier;
+   int pivot = arr[0].difficulty;
+   while (left < right) {
+      while ((left < right) && (arr[left].difficulty <= pivot)) {
+         left++;
+      }
+      while ((left < right) && (pivot < arr[right - 1].difficulty)) {
+         right--;
+      }
+      if (left < right) {
+         swap(left, right - 1, arr);
+      }
+   }
+   left--;
+   arr[0] = arr[left];
+   arr[left].difficulty = pivot;
+   arr[left].identifier = indentifier;
+   return left;
 }
 
-void findAssignments(struct Writers writers[], int m, int n) {
-  struct Writers newWriter;
+void quickSort(int length, struct Writers *arr) {
+   if (length <= 1) {
+      return; /* nothing to sort */
+   }
+   int boundary = partition(length, arr);
+   quickSort(boundary, arr);
+   quickSort(length - boundary - 1, &arr[boundary + 1]);
+}
 
-  for (int i = m; i < n; i++) {
-    scanf("%d %d", &newWriter.identifier, &newWriter.difficulty);
+// This function is the core of the Heap, arranges the elements in array.
+void heapifyFunction(int node, int size, struct Writers heap[]) {
+	
+	int minHeap = node;
+    int leftChild = 2 * node, rightChild = (2 * node) + 1;
 
-    if (newWriter.difficulty > writers[0].difficulty) {
-      writers[0] = newWriter;
-      mergeSort(m, writers);
+   // This statement checks if the right child is smaller than its parent.
+    if (rightChild < size && heap[rightChild].difficulty < heap[minHeap].difficulty)
+      minHeap = rightChild;
+
+    // This statement checks if left child is smaller than its parent.
+    if (leftChild  < size && heap[leftChild].difficulty < heap[minHeap].difficulty)
+      minHeap = leftChild ;
+
+	// If the node which will be heapified is not a parent.
+    if (minHeap != node) {
+      swap(node, minHeap, heap);
+      heapifyFunction(minHeap, size, heap);
     }
-  }
+}
 
-  for (int i = (m - 1); i >= 0; i--) {
+// Function to build a Min-Heap for the input array.
+void minHeapFromArray(struct Writers heap[], int size) {
+	for (int i = 0 ; i < size; i++) {
+		heapifyFunction(i, size, heap);
+	}
+}
+
+
+// This function is used to insert new entries of the assignments to the Heap structure we are using.
+void insertMinHeap (struct Writers newWriter,struct Writers writers[], int size) {
+	if (newWriter.difficulty > writers[0].difficulty) {
+		writers[0] = newWriter;
+		heapifyFunction(0, size, writers);
+	}
+}
+
+
+// This function is responsible of scanning the rest of the input, forming from it a min-heap, 
+// Afterwards sorting, and printing in descending order the assignments ranked by the difficulty.
+void findAssignments(struct Writers writers[], int m, int n) {
+	struct Writers newWriter;
+
+	for (int i = m; i < n; i++) {
+		scanf("%d %d", &newWriter.identifier, &newWriter.difficulty);
+		insertMinHeap(newWriter,writers,m);
+	}
+
+  // We have decided to use quickSort algorithm as after the observations from the Assignment 1 it is faster than mergeSort.
+  quickSort(m, writers);
+
+  for (int i = m - 1; i >= 0; i--) {
     printf("%d %d\n", writers[i].identifier, writers[i].difficulty);
   }
 }
 
 int main(int argc, char* argv[]) {
 	
-	// We are scanning the input of the number of websites.
+	// We are scanning the input of the number of the assignments, and in how many are we interested
 	int n, m;
 	scanf("%d %d", &n, &m);
 
-  struct Writers writers[m];
+	// To keep the memory complexity O(m) we have decided to use structs, cause we have two types of data we classified it into
+	// Assignment identifier (which is the number ID of the assignment) and it's difficulty.
+  	struct Writers writers[m];
 
-  for (int i = 0; i < m; i++) {
-    scanf("%d %d", &writers[i].identifier, &writers[i].difficulty);
-  }
-
-  mergeSort(m, writers);
-
-  findAssignments(writers, m ,n);
-
+	// Scanning only m integers.
+	for (int i = 0; i < m; i++) {
+		scanf("%d %d", &writers[i].identifier, &writers[i].difficulty);
+	}
+     
+	// Making use of the Min Heap Data Structures, as explained in the lectures.
+	minHeapFromArray(writers, m);
+	findAssignments(writers, m ,n);
 	return 0;
 }
